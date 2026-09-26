@@ -14,6 +14,7 @@ import { prismaWrite as prisma, prismaRead, prismaBackfill } from './db';
 import { stopIndexerService } from './indexer/indexer';
 import { stopP2pNode } from './p2p';
 import { shutdownWebSocketServer } from './ws/websocketServer';
+import { stopMevPredictionPublisher } from './ws/mevPredictBroadcaster';
 import { stopBridgeWorker } from './bridge-tracker';
 import { feedOrchestrator } from './feed/orchestrator';
 import { stopPriceUpdater } from './services/pricing';
@@ -23,6 +24,7 @@ import { eventBus } from './events/eventBus';
 import { logger } from './logger';
 import { featureFlags } from './feature-flags';
 import { reconcileOrphanedFuzzJobs } from './fuzzing/fuzzer';
+import { registerScheduledScanner } from './scanning/scheduled-scanner';
 
 let isShuttingDown = false;
 const SERVICE_START_TIME = Date.now();
@@ -203,6 +205,7 @@ async function main() {
 
   // Reconcile any orphaned fuzzing jobs from previous startup
   await reconcileOrphanedFuzzJobs();
+  registerScheduledScanner();
 
   server.httpServer.listen(config.port, () => {
     logger.info('Soroban Explorer API started', { port: config.port });
